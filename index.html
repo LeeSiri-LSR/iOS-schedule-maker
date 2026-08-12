@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日程工具">
+<title>日程生成器</title>
+<style>:root {
+  --blue: #3B82F6;
+  --indigo: #6366F1;
+  --bg: #F6F7FB;
+  --card: #FFFFFF;
+  --text: #0F172A;
+  --sub: #64748B;
+  --line: #E2E8F0;
+  --orange: #F59E0B;
+  --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: radial-gradient(1200px 480px at 50% -10%, #EAF0FF 0%, var(--bg) 45%);
+  color: var(--text);
+  padding-bottom: 56px;
+  font-size: 15px;
+}
+header { padding: 40px 20px 12px; text-align: center; position: relative; }
+header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0 0 6px;
+}
+header p { margin: 0; color: #94A3B8; font-size: 13px; letter-spacing: .3px; }
+.lang {
+  position: absolute; top: 38px; right: 16px; display: flex; gap: 4px;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 12px; padding: 3px;
+  box-shadow: 0 2px 10px rgba(15,23,42,.06);
+}
+.langbtn {
+  border: none; background: transparent; font-size: 13px; font-weight: 600;
+  padding: 5px 11px; border-radius: 9px; color: var(--sub); cursor: pointer;
+  font-family: inherit; transition: all .15s ease;
+}
+.langbtn:hover { color: var(--text); }
+.langbtn.active {
+  background: linear-gradient(135deg, #4F7DF9 0%, #6366F1 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99,102,241,.3);
+}
+main { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 16px;
+  border: 1px solid rgba(226,232,240,.9);
+  box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 10px 30px rgba(15,23,42,.06);
+}
+.tabs {
+  display: flex; gap: 6px; padding: 6px; margin-top: 14px;
+  background: #EEF1F6; border: 1px solid rgba(226,232,240,.9); border-radius: 15px;
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .18s ease;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: #fff;
+  color: #4F46E5;
+  box-shadow: 0 2px 8px rgba(15,23,42,.08);
+}
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  color: #94A3B8;
+  margin-bottom: 7px;
+}
+input[type=text], input[type=date], input[type=time], textarea {
+  width: 100%;
+  font-size: 15.5px;
+  font-family: inherit;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  appearance: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input[type=text]:focus, input[type=date]:focus, input[type=time]:focus, textarea:focus {
+  outline: none;
+  border-color: #818CF8;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+}
+textarea { min-height: 64px; resize: vertical; }
+input.datefield {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='4'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 17px;
+  padding-right: 38px;
+}
+.row { display: flex; gap: 12px; }
+.row .field { flex: 1; }
+.check { display: flex; align-items: center; gap: 8px; }
+.check input { width: 20px; height: 20px; accent-color: #6366F1; }
+.check span { font-size: 15px; color: var(--text); }
+button.primary {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #fff;
+  background: linear-gradient(135deg, #4F7DF9 0%, #6366F1 100%);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 16px rgba(99,102,241,.28);
+  transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+}
+button.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(99,102,241,.34); }
+button.primary:active { transform: translateY(0) scale(.99); filter: brightness(.96); }
+.links { display: none; }
+.links a, .links button.link {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 14px;
+  text-decoration: none;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s ease;
+}
+.links a:hover, .links button.link:hover { border-color: #A5B4FC; color: #4F46E5; }
+.links a.apple {
+  background: linear-gradient(135deg, #4F7DF9 0%, #6366F1 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(99,102,241,.28);
+}
+.links a.apple:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(99,102,241,.34); color: #fff; }
+.links a:active, .links button.link:active { transform: scale(.99); }
+.hint { font-size: 12px; color: var(--sub); margin-top: 10px; line-height: 1.6; }
+.sample {
+  display: inline-block; margin-top: 8px; font-size: 13px; color: #4F46E5;
+  cursor: pointer; background: none; border: none; padding: 0; font-family: inherit;
+}
+.sample:hover { text-decoration: underline; }
+#multiText { min-height: 180px; }
+#multiResult h2, .saved h2 { font-size: 14px; color: #94A3B8; margin: 20px 4px 10px; font-weight: 700; letter-spacing: .4px; }
+#multiResult h2 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; }
+.selall { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); font-weight: 500; cursor: pointer; letter-spacing: 0; }
+.selall input { accent-color: #6366F1; width: 16px; height: 16px; margin: 0; }
+.evrow { display: flex; gap: 10px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #F1F5F9; }
+.evrow:last-child { border-bottom: none; }
+.evrow.off { opacity: .45; }
+.circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #CBD5E1;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5px;
+  transition: all .15s ease;
+}
+.circle:hover { border-color: #818CF8; }
+.circle.on {
+  background: linear-gradient(135deg, #4F7DF9, #6366F1);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(99,102,241,.35);
+}
+.circle.on::after { content: '✓'; color: #fff; font-size: 14px; font-weight: 700; }
+.evbody { flex: 1; min-width: 0; }
+.evbody input[type=text] { font-weight: 600; margin-bottom: 8px; }
+.evmeta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.evmeta input.datefield, .evmeta input[type=time] { font-size: 13px; padding: 6px 9px; flex-shrink: 0; border-radius: 10px; font-weight: 500; margin-bottom: 0; }
+.evmeta input.datefield { width: 136px; }
+.evmeta .sep { color: var(--sub); }
+.allDayLbl { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--sub); cursor: pointer; }
+.allDayLbl input { width: 15px; height: 15px; margin: 0; accent-color: #6366F1; }
+.warnflag { font-size: 12px; color: var(--orange); }
+.evfoot { display: flex; gap: 10px; align-items: center; }
+.evfoot input[type=text] { flex: 1; font-size: 14px; padding: 8px 12px; font-weight: 400; margin-bottom: 0; }
+.evdel {
+  border: none; background: none; color: #CBD5E1; font-size: 18px;
+  cursor: pointer; padding: 4px 6px; flex-shrink: 0; transition: color .15s ease;
+  font-family: inherit;
+}
+.evdel:hover { color: #EF4444; }
+.glink { font-size: 12px; color: #4F46E5; text-decoration: none; flex-shrink: 0; }
+.glink:hover { text-decoration: underline; }
+.item { display: flex; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid #F1F5F9; }
+.item:last-child { border-bottom: none; }
+.item .info { flex: 1; min-width: 0; }
+.item .title { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .time { font-size: 13px; color: var(--sub); margin-top: 2px; }
+.item button {
+  flex-shrink: 0; font-size: 13px; font-weight: 600; padding: 7px 13px;
+  border-radius: 10px; border: 1.5px solid var(--line); background: #fff; color: var(--text);
+  cursor: pointer; font-family: inherit; transition: all .15s ease;
+}
+.item button:hover { border-color: #A5B4FC; color: #4F46E5; }
+.item button.del { color: #EF4444; border-color: #FECACA; }
+.item button.del:hover { background: #FEF2F2; color: #EF4444; }
+.empty { color: var(--sub); font-size: 14px; text-align: center; padding: 16px 0; }
+.cal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, .28);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: calFade .18s ease;
+}
+@keyframes calFade { from { opacity: 0; } }
+.cal-card {
+  width: 340px;
+  max-width: calc(100vw - 40px);
+  background: rgba(255, 255, 255, .96);
+  border-radius: 24px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .28);
+  animation: calPop .22s cubic-bezier(.2, .9, .3, 1.15);
+}
+@keyframes calPop { from { transform: scale(.92) translateY(12px); opacity: 0; } }
+.cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.cal-month { font-weight: 700; font-size: 17px; letter-spacing: -.2px; }
+.cal-nav {
+  width: 32px; height: 32px; border-radius: 10px; border: none;
+  background: #F1F5F9; color: var(--text); font-size: 16px;
+  cursor: pointer; transition: background .15s ease; font-family: inherit;
+}
+.cal-nav:hover { background: #E2E8F0; }
+.cal-week {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  text-align: center; font-size: 11px; font-weight: 600;
+  letter-spacing: .6px; color: #94A3B8; margin-bottom: 6px;
+}
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; border-radius: 12px; cursor: pointer;
+  color: var(--text); font-weight: 500;
+  transition: background .12s ease, color .12s ease, box-shadow .12s ease;
+}
+.cal-day:hover { background: #EEF2FF; }
+.cal-day.other { color: #CBD5E1; }
+.cal-day.today { box-shadow: inset 0 0 0 1.5px #A5B4FC; }
+.cal-day.selected {
+  background: linear-gradient(135deg, #4F7DF9, #6366F1);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, .35);
+}
+.cal-foot { display: flex; gap: 8px; margin-top: 16px; }
+.cal-today {
+  flex: 1; padding: 10px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: #fff;
+  font-weight: 600; font-size: 13px; cursor: pointer;
+  color: var(--text); font-family: inherit; transition: all .15s ease;
+}
+.cal-today:hover { border-color: #A5B4FC; color: #4F46E5; }
+.cal-done {
+  flex: 1; padding: 10px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #4F7DF9, #6366F1);
+  color: #fff; font-weight: 600; font-size: 13px; cursor: pointer;
+  font-family: inherit; box-shadow: 0 4px 12px rgba(99, 102, 241, .3);
+  transition: all .15s ease;
+}
+.cal-done:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, .38); }
+</style>
+</head>
+<body>
+<header>
+  <div class="lang">
+    <button type="button" class="langbtn" data-lang="zh">中文</button>
+    <button type="button" class="langbtn" data-lang="en">EN</button>
+  </div>
+  <h1 data-i18n="appTitle">📅 日程生成器</h1>
+  <p data-i18n="appSub">填好日程，一键添加进 Apple 日历</p>
+</header>
+<main>
+  <div class="card tabs">
+    <button type="button" id="tabSingle" class="tab active" data-i18n="tabSingle">单日程</button>
+    <button type="button" id="tabMulti" class="tab" data-i18n="tabMulti">多日程</button>
+  </div>
+
+  <div id="singleSection">
+    <form id="form" class="card">
+      <div class="field">
+        <label data-i18n="fTitle">标题（必填）</label>
+        <input type="text" id="title" data-i18n-ph="phTitle" placeholder="例如：小组讨论" required>
+      </div>
+      <div class="field">
+        <label data-i18n="fDate">日期（必填）</label>
+        <input type="text" id="date" class="datefield" data-i18n-ph="datePh" placeholder="选择日期" required>
+      </div>
+      <div class="field check">
+        <input type="checkbox" id="allDay">
+        <span data-i18n="fAllDay">全天事件</span>
+      </div>
+      <div class="row" id="timeRow">
+        <div class="field">
+          <label data-i18n="fStart">开始时间</label>
+          <input type="time" id="startTime" value="09:00">
+        </div>
+        <div class="field">
+          <label data-i18n="fEnd">结束时间</label>
+          <input type="time" id="endTime" value="10:00">
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="fLoc">地点（可选）</label>
+        <input type="text" id="location" data-i18n-ph="phLoc" placeholder="例如：图书馆 3 楼">
+      </div>
+      <div class="field">
+        <label data-i18n="fNotes">备注（可选）</label>
+        <textarea id="notes" data-i18n-ph="phNotes" placeholder="提前准备什么、要带什么……"></textarea>
+      </div>
+      <button type="submit" class="primary" data-i18n="btnGen">生成日历链接</button>
+    </form>
+
+    <div id="links" class="card links">
+      <a id="appleLink" class="apple" href="#" data-i18n="btnApple">📲 添加到 Apple 日历</a>
+      <a id="googleLink" href="#" target="_blank" rel="noopener" data-i18n="btnGoogle">➕ 添加到 Google 日历</a>
+      <button id="downloadBtn" class="link" type="button" data-i18n="btnDownload">⬇️ 下载 .ics 文件（手动导入）</button>
+      <p class="hint" data-i18n="hintSingle">提示：iPhone 上点第一个按钮会直接跳到「日历」App 并弹出添加界面。Mac 上用 Safari 点也一样；如果用 Chrome，请改用「下载 .ics」，双击文件即可添加。</p>
+    </div>
+  </div>
+
+  <div id="multiSection" style="display:none">
+    <div class="card">
+      <div class="field">
+        <label data-i18n="mLabel">把未来的安排一次性粘贴进来（每行或每句一个日程，支持逗号分隔）</label>
+        <textarea id="multiText" data-i18n-ph="phMulti" placeholder="例如：&#10;8月20日下午3点在图书馆和导师讨论论文&#10;我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠&#10;9月1日至9月3日每天上午9点半上课&#10;20号中午12点交作业"></textarea>
+      </div>
+      <button type="button" class="sample" id="sampleBtn" data-i18n="btnSample">填入示例</button>
+      <button type="button" id="parseBtn" class="primary" data-i18n="btnParse">识别日程</button>
+      <p class="hint" data-i18n="hintMulti">支持的写法：8月20日下午3点 / 明天上午9点半 / 下周三晚上7点 / 周六下午5点到7点 / 9月1日至9月3日每天9点 / 20号中午12点 / 后天。地点（去/在 + 地点）会自动提取，没写时间的自动设为全天，识别错的可以直接改。</p>
+    </div>
+
+    <div id="multiResult" class="card" style="display:none">
+      <h2>
+        <span data-i18n="mResultTitle">识别出的日程</span>
+        <label class="selall"><input type="checkbox" id="selectAll" checked> <span data-i18n="mSelectAll">全选</span></label>
+      </h2>
+      <div id="eventCards"></div>
+      <button type="button" id="confirmBtn" class="primary" data-i18n="btnConfirm">确认并生成日历链接</button>
+      <div id="multiLinks" class="links">
+        <a id="multiAppleLink" class="apple" href="#" data-i18n="btnAppleMulti">📲 勾选的日程全部添加到 Apple 日历</a>
+        <button id="multiDownloadBtn" class="link" type="button" data-i18n="btnDownload">⬇️ 下载 .ics 文件（手动导入）</button>
+        <p class="hint" data-i18n="hintMultiLinks">点上面的按钮会一次弹出所有勾选的日程。每行右下角的 Google 链接可以单独添加那一条到 Google 日历。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="saved card">
+    <h2 data-i18n="savedTitle">已保存的日程</h2>
+    <div id="list"></div>
+  </div>
+</main>
+
+<div id="calOverlay" class="cal-overlay" style="display:none">
+  <div class="cal-card">
+    <div class="cal-head">
+      <button type="button" class="cal-nav" id="calPrev">‹</button>
+      <div class="cal-month" id="calMonth"></div>
+      <button type="button" class="cal-nav" id="calNext">›</button>
+    </div>
+    <div class="cal-week" id="calWeek"></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-foot">
+      <button type="button" class="cal-today" id="calToday"></button>
+      <button type="button" class="cal-today" id="calClear"></button>
+      <button type="button" class="cal-done" id="calDone"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById('form');
+const listEl = document.getElementById('list');
+const STORE_KEY = 'schedule_tool_items';
+
+const I18N = {
+  zh: {
+    appTitle: '📅 日程生成器',
+    appSub: '填好日程，一键添加进 Apple 日历',
+    tabSingle: '单日程',
+    tabMulti: '多日程',
+    fTitle: '标题（必填）',
+    phTitle: '例如：小组讨论',
+    fDate: '日期（必填）',
+    datePh: '选择日期',
+    fAllDay: '全天事件',
+    fStart: '开始时间',
+    fEnd: '结束时间',
+    fLoc: '地点（可选）',
+    phLoc: '例如：图书馆 3 楼',
+    fNotes: '备注（可选）',
+    phNotes: '提前准备什么、要带什么……',
+    btnGen: '生成日历链接',
+    btnApple: '📲 添加到 Apple 日历',
+    btnGoogle: '➕ 添加到 Google 日历',
+    btnDownload: '⬇️ 下载 .ics 文件（手动导入）',
+    hintSingle: '提示：iPhone 上点第一个按钮会直接跳到「日历」App 并弹出添加界面。Mac 上用 Safari 点也一样；如果用 Chrome，请改用「下载 .ics」，双击文件即可添加。',
+    mLabel: '把未来的安排一次性粘贴进来（每行或每句一个日程，支持逗号分隔）',
+    phMulti: '例如：我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
+    btnSample: '填入示例',
+    btnParse: '识别日程',
+    hintMulti: '支持的写法：8月20日下午3点 / 明天上午9点半 / 下周三晚上7点 / 周六下午5点到7点 / 9月1日至9月3日每天9点 / 20号中午12点 / 后天。地点（去/在 + 地点）会自动提取，没写时间的自动设为全天，识别错的可以直接改。',
+    mResultTitle: '识别出的日程',
+    mSelectAll: '全选',
+    btnConfirm: '确认并生成日历链接',
+    btnAppleMulti: '📲 勾选的日程全部添加到 Apple 日历',
+    hintMultiLinks: '点上面的按钮会一次弹出所有勾选的日程。每行右下角的 Google 链接可以单独添加那一条到 Google 日历。',
+    savedTitle: '已保存的日程',
+    savedEmpty: '还没有保存的日程',
+    btnAdd: '加日历',
+    btnDel: '删除',
+    locPh: '地点（可选）',
+    allDay: '全天',
+    missingDate: '日期未识别',
+    alertEnd: '结束时间需要晚于开始时间',
+    alertPaste: '请先粘贴日程内容',
+    alertNoParse: '没识别出日程，请检查日期写法',
+    alertSelect: '请至少勾选一个日程',
+    alertIncomplete: '有日程日期/时间不完整，请检查后重试',
+    sampleText: '我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
+  },
+  en: {
+    appTitle: '📅 Schedule Maker',
+    appSub: 'Fill in your plans, add to Apple Calendar in one tap',
+    tabSingle: 'Single',
+    tabMulti: 'Multiple',
+    fTitle: 'Title (required)',
+    phTitle: 'e.g. Group discussion',
+    fDate: 'Date (required)',
+    datePh: 'Pick a date',
+    fAllDay: 'All-day event',
+    fStart: 'Start',
+    fEnd: 'End',
+    fLoc: 'Location (optional)',
+    phLoc: 'e.g. Library 3F',
+    fNotes: 'Notes (optional)',
+    phNotes: 'What to prepare, what to bring…',
+    btnGen: 'Generate calendar link',
+    btnApple: '📲 Add to Apple Calendar',
+    btnGoogle: '➕ Add to Google Calendar',
+    btnDownload: '⬇️ Download .ics (manual import)',
+    hintSingle: 'Tip: on iPhone, the first button jumps straight to the Calendar app with the event ready to save. Same on Mac with Safari. In Chrome, use "Download .ics" and double-click the file instead.',
+    mLabel: 'Paste your future plans in one go (one line or sentence per schedule, commas supported)',
+    phMulti: 'e.g. On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
+    btnSample: 'Fill example',
+    btnParse: 'Parse schedules',
+    hintMulti: 'Supported: Aug 20 at 3pm / tomorrow at 9:30am / next Wednesday 7pm / Saturday 5-7pm / Sep 1st to 3rd at 9am / 20th at noon / day after tomorrow. Locations (go to / at + place) are extracted, entries without a time become all-day, and you can fix any mistakes.',
+    mResultTitle: 'Recognized schedules',
+    mSelectAll: 'Select all',
+    btnConfirm: 'Confirm & generate links',
+    btnAppleMulti: '📲 Add all selected to Apple Calendar',
+    hintMultiLinks: 'The button above adds every selected schedule at once. The Google link on each row adds just that one to Google Calendar.',
+    savedTitle: 'Saved schedules',
+    savedEmpty: 'No saved schedules yet',
+    btnAdd: 'Add',
+    btnDel: 'Delete',
+    locPh: 'Location (optional)',
+    allDay: 'All-day',
+    missingDate: 'Date missing',
+    alertEnd: 'End time must be after start time',
+    alertPaste: 'Paste your schedule text first',
+    alertNoParse: 'No schedules recognized, check the date format',
+    alertSelect: 'Select at least one schedule',
+    alertIncomplete: 'Some schedules have incomplete date/time',
+    sampleText: 'On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
+  },
+};
+
+let lang = localStorage.getItem('schedule_tool_lang') || 'zh';
+function t(key) { return I18N[lang][key] || I18N.zh[key] || key; }
+
+function applyLang() {
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('appTitle').replace(/^📅\s*/, '');
+  document.querySelectorAll('.langbtn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+  const dateInput = document.getElementById('date');
+  if (dateInput && dateInput.dataset.iso) dateInput.value = fmtDateDisplay(dateInput.dataset.iso);
+  if (typeof calOverlay !== 'undefined' && calOverlay && calOverlay.style.display === 'flex') {
+    calLabels();
+    renderCal();
+  }
+  if (parsedEvents && parsedEvents.length) renderEventCards();
+  renderList();
+}
+
+document.querySelectorAll('.langbtn').forEach(b => {
+  b.addEventListener('click', () => {
+    lang = b.dataset.lang;
+    localStorage.setItem('schedule_tool_lang', lang);
+    applyLang();
+  });
+});
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmt(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+function esc(text) {
+  return String(text || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+}
+
+function dateToICS(d) { return d.replace(/-/g, ''); }
+
+function eventLines(data, uidSuffix) {
+  const lines = [
+    'BEGIN:VEVENT',
+    'UID:' + data.uid + '-' + uidSuffix + '@schedule-tool',
+    'DTSTAMP:' + data.now + 'Z',
+  ];
+  if (data.allDay) {
+    const end = new Date(data.date + 'T00:00:00');
+    end.setDate(end.getDate() + 1);
+    lines.push('DTSTART;VALUE=DATE:' + dateToICS(data.date));
+    lines.push('DTEND;VALUE=DATE:' + dateToICS(fmt(end)));
+  } else {
+    lines.push('DTSTART:' + dateToICS(data.date) + 'T' + data.startTime.replace(':', '') + '00');
+    lines.push('DTEND:' + dateToICS(data.date) + 'T' + data.endTime.replace(':', '') + '00');
+  }
+  lines.push('SUMMARY:' + esc(data.title));
+  if (data.location) lines.push('LOCATION:' + esc(data.location));
+  if (data.notes) lines.push('DESCRIPTION:' + esc(data.notes));
+  lines.push('END:VEVENT');
+  return lines;
+}
+
+function buildICS(events) {
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ScheduleTool//CN'];
+  events.forEach((ev, i) => lines.push(...eventLines(ev, i)));
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function makeGoogleURL(data) {
+  const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+  const text = '&text=' + encodeURIComponent(data.title);
+  let dates;
+  if (data.allDay) {
+    const end = new Date(data.date + 'T00:00:00');
+    end.setDate(end.getDate() + 1);
+    dates = '&dates=' + dateToICS(data.date) + '/' + dateToICS(fmt(end));
+  } else {
+    dates = '&dates=' + dateToICS(data.date) + 'T' + data.startTime.replace(':', '') + '00' + '/' +
+            dateToICS(data.date) + 'T' + data.endTime.replace(':', '') + '00';
+  }
+  const details = data.notes ? '&details=' + encodeURIComponent(data.notes) : '';
+  const location = data.location ? '&location=' + encodeURIComponent(data.location) : '';
+  return base + text + dates + details + location;
+}
+
+function nowStamp() {
+  const d = new Date();
+  return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) +
+         'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds());
+}
+
+function getFormData() {
+  return {
+    title: document.getElementById('title').value.trim(),
+    date: document.getElementById('date').dataset.iso || '',
+    allDay: document.getElementById('allDay').checked,
+    startTime: document.getElementById('startTime').value,
+    endTime: document.getElementById('endTime').value,
+    location: document.getElementById('location').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    uid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    now: nowStamp(),
+  };
+}
+
+function downloadICS(ics) {
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'schedule.ics';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function getItems() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function setItems(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)); }
+
+function showSingleLinks(data) {
+  const ics = buildICS([data]);
+  document.getElementById('appleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  document.getElementById('googleLink').href = makeGoogleURL(data);
+  document.getElementById('downloadBtn').dataset.ics = ics;
+  document.getElementById('links').style.display = 'block';
+  document.getElementById('links').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('downloadBtn').addEventListener('click', (e) => {
+  const ics = e.currentTarget.dataset.ics;
+  if (ics) downloadICS(ics);
+});
+
+document.getElementById('multiDownloadBtn').addEventListener('click', (e) => {
+  const ics = e.currentTarget.dataset.ics;
+  if (ics) downloadICS(ics);
+});
+
+document.getElementById('allDay').addEventListener('change', (e) => {
+  document.getElementById('timeRow').style.display = e.target.checked ? 'none' : 'flex';
+});
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = getFormData();
+  if (!data.title || !data.date) return;
+  if (!data.allDay && data.endTime <= data.startTime) {
+    alert(t('alertEnd'));
+    return;
+  }
+  const items = getItems();
+  items.unshift(data);
+  setItems(items);
+  renderList();
+  showSingleLinks(data);
+  form.reset();
+  const di = document.getElementById('date');
+  di.dataset.iso = fmt(new Date());
+  di.value = fmtDateDisplay(di.dataset.iso);
+  document.getElementById('startTime').value = '09:00';
+  document.getElementById('endTime').value = '10:00';
+  document.getElementById('timeRow').style.display = 'flex';
+  document.getElementById('allDay').checked = false;
+});
+
+const CN_NUM = { 零:0, 一:1, 二:2, 两:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10, 十一:11, 十二:12 };
+
+function cnToInt(s) {
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  if (s.includes('十')) {
+    const parts = s.split('十');
+    const tens = parts[0] === '' ? 1 : (CN_NUM[parts[0]] ?? 0);
+    const ones = parts[1] ? (CN_NUM[parts[1]] ?? 0) : 0;
+    return tens * 10 + ones;
+  }
+  return CN_NUM[s] ?? NaN;
+}
+
+function todayMidnight() {
+  const t = new Date();
+  t.setHours(0, 0, 0, 0);
+  return t;
+}
+
+const WD = { 一:1, 二:2, 三:3, 四:4, 五:5, 六:6, 日:0, 天:0 };
+
+function extractDate(s) {
+  const rel = { 今天:0, 明天:1, 后天:2, 大后天:3 };
+  for (const [w, off] of Object.entries(rel)) {
+    if (s.includes(w)) {
+      const d = new Date(todayMidnight());
+      d.setDate(d.getDate() + off);
+      return { date: fmt(d), matched: w };
+    }
+  }
+  let m = s.match(/(下|本)?(?:周|星期|礼拜)([一二三四五六日天])/);
+  if (m) {
+    const d = new Date(todayMidnight());
+    let diff = WD[m[2]] - d.getDay();
+    if (m[1] === '下') diff += 7;
+    else if (m[1] === '本') { if (diff < 0) diff += 7; }
+    else { if (diff <= 0) diff += 7; }
+    d.setDate(d.getDate() + diff);
+    return { date: fmt(d), matched: m[0] };
+  }
+  m = s.match(/下个?月\s*(\d{1,2}|[一二三四五六七八九十]{1,3})[日号]/);
+  if (m) {
+    const day = cnToInt(m[1]);
+    const t = new Date(todayMidnight());
+    let y = t.getFullYear(), mo = t.getMonth() + 1;
+    mo += 1;
+    if (mo > 12) { mo = 1; y += 1; }
+    return { date: y + '-' + pad(mo) + '-' + pad(day), matched: m[0] };
+  }
+  m = s.match(/(?:(\d{4})\s*[年.\/-])?\s*(\d{1,2})\s*[月.\/-]\s*(\d{1,2})\s*[日号]?/);
+  if (m) {
+    let y = m[1] ? parseInt(m[1], 10) : new Date().getFullYear();
+    const mo = parseInt(m[2], 10), day = parseInt(m[3], 10);
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+      if (!m[1]) {
+        const t = todayMidnight();
+        if (mo < t.getMonth() + 1 || (mo === t.getMonth() + 1 && day < t.getDate())) y += 1;
+      }
+      return { date: y + '-' + pad(mo) + '-' + pad(day), matched: m[0].trim() };
+    }
+  }
+  m = s.match(/(\d{1,2})[日号]/);
+  if (m) {
+    const day = parseInt(m[1], 10);
+    if (day >= 1 && day <= 31) {
+      const t = todayMidnight();
+      let d = new Date(t.getFullYear(), t.getMonth(), day);
+      if (d < t) d = new Date(t.getFullYear(), t.getMonth() + 1, day);
+      return { date: fmt(d), matched: m[0] };
+    }
+  }
+  return null;
+}
+
+function parseTimeCore(period, numStr, fracStr, inheritPeriod) {
+  let h = cnToInt(numStr);
+  if (isNaN(h) || h > 23) return null;
+  let min = 0;
+  if (fracStr) {
+    if (fracStr === '半') min = 30;
+    else {
+      min = cnToInt(fracStr.replace('分', ''));
+      if (isNaN(min) || min > 59) min = 0;
+    }
+  }
+  const p = period || inheritPeriod || '';
+  if (/下午|晚上|傍晚|夜里/.test(p)) { if (h < 12) h += 12; }
+  else if (/凌晨/.test(p)) { if (h === 12) h = 0; }
+  else if (/中午/.test(p)) { if (h < 11) h += 12; }
+  else if (/上午|早上/.test(p)) { if (h === 12) h = 0; }
+  else { if (h <= 7) h += 12; }
+  return { h, min };
+}
+
+function extractTimeRange(s) {
+  const NUM = '([一二三四五六七八九十\\d]{1,3})';
+  const PER = '(凌晨|早上|上午|中午|下午|傍晚|晚上|夜里)?';
+  const FRAC = '(半|[一二三四五六七八九十\\d]{1,2}分?)?';
+  const re = new RegExp(
+    PER + '\\s*' + NUM + '\\s*[点时]\\s*' + FRAC + '\\s*钟?\\s*[到至~\\-]\\s*' +
+    PER + '\\s*' + NUM + '\\s*[点时]\\s*' + FRAC + '\\s*钟?'
+  );
+  const m = s.match(re);
+  if (m) {
+    const start = parseTimeCore(m[1], m[2], m[3], '');
+    const end = parseTimeCore(m[4], m[5], m[6], m[1]);
+    if (start && end) return { start, end, matched: m[0] };
+  }
+  return null;
+}
+
+function extractTime(s) {
+  let m = s.match(/([01]?\d|2[0-3]):([0-5]\d)/);
+  if (m) return { h: parseInt(m[1], 10), min: parseInt(m[2], 10), matched: m[0] };
+  m = s.match(/(凌晨|早上|上午|中午|下午|傍晚|晚上|夜里)?\s*([一二三四五六七八九十\d]{1,3})\s*[点时]\s*(半|[一二三四五六七八九十\d]{1,2}分?)?\s*钟?/);
+  if (m) {
+    const t = parseTimeCore(m[1], m[2], m[3], '');
+    if (!t) return null;
+    return { h: t.h, min: t.min, matched: m[0] };
+  }
+  return null;
+}
+
+function parseRange(s) {
+  let m = s.match(/(?:(\d{4})年)?(\d{1,2})月(\d{1,2})[日号]?\s*[至到~\-]\s*(\d{1,2})月(\d{1,2})[日号]?/);
+  if (m) {
+    let y = m[1] ? parseInt(m[1], 10) : new Date().getFullYear();
+    const start = new Date(y, parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    const end = new Date(y, parseInt(m[4], 10) - 1, parseInt(m[5], 10));
+    if (end >= start && (end - start) / 86400000 <= 30) {
+      const days = [];
+      const cur = new Date(start);
+      while (cur <= end) {
+        days.push(fmt(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return { days, matched: m[0] };
+    }
+  }
+  m = s.match(/(?:(\d{4})年)?(\d{1,2})月(\d{1,2})[日号]?\s*[至到~\-]\s*(\d{1,2})[日号]/);
+  if (m) {
+    let y = m[1] ? parseInt(m[1], 10) : new Date().getFullYear();
+    const start = new Date(y, parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    const end = new Date(y, parseInt(m[2], 10) - 1, parseInt(m[4], 10));
+    if (end >= start && (end - start) / 86400000 <= 30) {
+      const days = [];
+      const cur = new Date(start);
+      while (cur <= end) {
+        days.push(fmt(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return { days, matched: m[0] };
+    }
+  }
+  return null;
+}
+
+function preLocClean(s) {
+  return s
+    .replace(/^(我(要|想|得|准备|计划|需要)?|要|得|准备|计划|需要)\s*/, '')
+    .replace(/^[\s,，。:：\-—~钟]+/, '')
+    .trim();
+}
+
+function splitLocation(t) {
+  const VERBS = '看|做|参加|买|吃|逛|听|玩|接|送|取|领|办|修|讨论|见面|自习|学习|开会|上课|健身|跑步|打球|聚餐|约会|拍|剪|面试|游泳|开|上';
+  let m = t.match(new RegExp('^去\\s*([^和跟与\\s，。]{1,20}?)(' + VERBS + ')(.*)$'));
+  if (m && m[1]) return { location: m[1].trim(), title: m[2] + m[3] };
+  m = t.match(new RegExp('^在\\s*([^和跟与\\s，。]{1,20}?)(' + VERBS + ')(.*)$'));
+  if (m && m[1]) return { location: m[1].trim(), title: m[2] + m[3] };
+  m = t.match(new RegExp('^去\\s*([^\\s，。]{1,20}?)\\s*[和跟与].+?(' + VERBS + ')(.*)$'));
+  if (m && m[1]) return { location: m[1].trim(), title: m[2] + m[3] };
+  m = t.match(new RegExp('^在\\s*([^\\s，。]{1,20}?)\\s*[和跟与].+?(' + VERBS + ')(.*)$'));
+  if (m && m[1]) return { location: m[1].trim(), title: m[2] + m[3] };
+  return { location: '', title: t.replace(/^[去在]\s*/, '') };
+}
+
+function cleanTitle(s) {
+  return s
+    .replace(/^(有(个|一个)?\s*)/, '')
+    .replace(/[\s,，。:：\-—~]+$/, '')
+    .replace(/^[在和跟与]\s*/, '')
+    .trim();
+}
+
+const MONTHS = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, sept:8, oct:9, nov:10, dec:11 };
+const DAYS = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
+
+function extractDateEN(s) {
+  const low = s.toLowerCase();
+  let m = low.match(/\b(day after tomorrow|tomorrow|today)\b/);
+  if (m) {
+    const off = { today: 0, tomorrow: 1, 'day after tomorrow': 2 }[m[1]];
+    const d = new Date(todayMidnight());
+    d.setDate(d.getDate() + off);
+    return { date: fmt(d), matched: s.slice(m.index, m.index + m[0].length) };
+  }
+  m = low.match(/\b(next|this|coming)\s+(mon(day)?|tue(sday)?|wed(nesday)?|thu(rsday)?|fri(day)?|sat(urday)?|sun(day)?)\b/);
+  if (m) {
+    const d = new Date(todayMidnight());
+    let diff = DAYS[m[2].slice(0, 3)] - d.getDay();
+    if (m[1] === 'next' || m[1] === 'coming') diff += 7;
+    else if (m[1] === 'this') { if (diff < 0) diff += 7; }
+    d.setDate(d.getDate() + diff);
+    return { date: fmt(d), matched: s.slice(m.index, m.index + m[0].length) };
+  }
+  m = low.match(/\b(mon(day)?|tue(sday)?|wed(nesday)?|thu(rsday)?|fri(day)?|sat(urday)?|sun(day)?)\b/);
+  if (m) {
+    const d = new Date(todayMidnight());
+    let diff = DAYS[m[1].slice(0, 3)] - d.getDay();
+    if (diff <= 0) diff += 7;
+    d.setDate(d.getDate() + diff);
+    return { date: fmt(d), matched: s.slice(m.index, m.index + m[0].length) };
+  }
+  m = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b/i);
+  if (m) {
+    let y = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+    const mo = MONTHS[m[1].slice(0, 3).toLowerCase()];
+    const day = parseInt(m[2], 10);
+    if (day >= 1 && day <= 31) {
+      if (!m[3]) {
+        const t = todayMidnight();
+        if (mo < t.getMonth() || (mo === t.getMonth() && day < t.getDate())) y += 1;
+      }
+      return { date: y + '-' + pad(mo + 1) + '-' + pad(day), matched: m[0] };
+    }
+  }
+  m = s.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?(?:,?\s+(\d{4}))?\b/i);
+  if (m) {
+    let y = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+    const mo = MONTHS[m[2].slice(0, 3).toLowerCase()];
+    const day = parseInt(m[1], 10);
+    if (day >= 1 && day <= 31) {
+      if (!m[3]) {
+        const t = todayMidnight();
+        if (mo < t.getMonth() || (mo === t.getMonth() && day < t.getDate())) y += 1;
+      }
+      return { date: y + '-' + pad(mo + 1) + '-' + pad(day), matched: m[0] };
+    }
+  }
+  m = s.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
+  if (m) {
+    const mo = parseInt(m[2], 10), day = parseInt(m[3], 10);
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+      return { date: m[1] + '-' + pad(mo) + '-' + pad(day), matched: m[0] };
+    }
+  }
+  m = s.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+  if (m) {
+    const mo = parseInt(m[1], 10), day = parseInt(m[2], 10);
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+      let y = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+      if (y < 100) y += 2000;
+      if (!m[3]) {
+        const t = todayMidnight();
+        if (mo < t.getMonth() + 1 || (mo === t.getMonth() + 1 && day < t.getDate())) y += 1;
+      }
+      return { date: y + '-' + pad(mo) + '-' + pad(day), matched: m[0] };
+    }
+  }
+  m = s.match(/\b(\d{1,2})(?:st|nd|rd|th)\b/);
+  if (m) {
+    const day = parseInt(m[1], 10);
+    if (day >= 1 && day <= 31) {
+      const t = todayMidnight();
+      let d = new Date(t.getFullYear(), t.getMonth(), day);
+      if (d < t) d = new Date(t.getFullYear(), t.getMonth() + 1, day);
+      return { date: fmt(d), matched: m[0] };
+    }
+  }
+  return null;
+}
+
+function timeEN(num, minStr, period, inheritPeriod) {
+  let h = parseInt(num, 10);
+  let min = minStr ? parseInt(minStr, 10) : 0;
+  if (isNaN(min) || min > 59) min = 0;
+  if (h > 23) return null;
+  const p = (period || inheritPeriod || '').toLowerCase().replace(/\./g, '');
+  if (p === 'pm') { if (h < 12) h += 12; }
+  else if (p === 'am') { if (h === 12) h = 0; }
+  else { if (h <= 7) h += 12; }
+  return { h, min };
+}
+
+function extractTimeRangeEN(s) {
+  const T = '(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)?';
+  const m = s.match(new RegExp('(?:from\\s+)?' + T + '\\s*(?:to|until|till|-|–|~)\\s*' + T, 'i'));
+  if (m) {
+    const start = timeEN(m[1], m[2], m[3]);
+    const end = timeEN(m[4], m[5], m[6], m[3]);
+    if (start && end) return { start, end, matched: m[0] };
+  }
+  return null;
+}
+
+function extractTimeEN(s) {
+  let m = s.match(/\b(noon|midnight)\b/i);
+  if (m) {
+    return m[1].toLowerCase() === 'noon'
+      ? { h: 12, min: 0, matched: m[0] }
+      : { h: 0, min: 0, matched: m[0] };
+  }
+  m = s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|o\'?clock)?\b/i);
+  if (m) {
+    const t = timeEN(m[1], m[2], m[3]);
+    if (!t) return null;
+    return { h: t.h, min: t.min, matched: m[0] };
+  }
+  return null;
+}
+
+function parseRangeEN(s) {
+  const M = '(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?';
+  const m = s.match(new RegExp('\\b' + M + '\\s+(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:to|until|-|–|~)\\s*(?:(?:' + M + '\\s+)?(\\d{1,2})(?:st|nd|rd|th)?)', 'i'));
+  if (m) {
+    const mo1 = MONTHS[m[1].slice(0, 3).toLowerCase()];
+    const d1 = parseInt(m[2], 10);
+    let mo2 = mo1;
+    let d2 = parseInt(m[3], 10);
+    if (m.length > 4 && m[3] !== undefined && m[4] !== undefined) {
+      mo2 = MONTHS[m[3].slice(0, 3).toLowerCase()];
+      d2 = parseInt(m[4], 10);
+    }
+    if (isNaN(d1) || isNaN(d2)) return null;
+    const y = new Date().getFullYear();
+    const start = new Date(y, mo1, d1);
+    const end = new Date(y, mo2, d2);
+    if (end >= start && (end - start) / 86400000 <= 30) {
+      const days = [];
+      const cur = new Date(start);
+      while (cur <= end) {
+        days.push(fmt(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return { days, matched: m[0] };
+    }
+  }
+  return null;
+}
+
+function preLocCleanEN(s) {
+  return s
+    .replace(/^(i|we)\s+(will|would|am|have|need|want|must|got to|have to)?\s*/i, '')
+    .replace(/^(have|has|got|need|want|will|must|gotta|gonna|going to|am going to|am|prepare|plan to)\s+(to\s+|a\s+|an\s+|the\s+)?/i, '')
+    .replace(/^(on|at|in|to|by)\s+/i, '')
+    .replace(/^(a|an|the|my|our)\s+/i, '')
+    .replace(/^[\s,\-–—~:.]*/, '')
+    .trim();
+}
+
+function splitLocationEN(t) {
+  const VERBS = 'watch|see|buy|eat|meet|attend|do|take|study|work|shop|play|join|give|present|swim|run|pick up|drop off|interview|discuss|have|hang out|exercise|write|read|grab|get';
+  let m = t.match(new RegExp('^(?:go to|going to|go|head to|visit|drive to)\\s+(.{1,40}?)\\s+(?:to\\s+)?(' + VERBS + ')\\b(.*)$', 'i'));
+  if (m) return { location: m[1].trim(), title: (m[2] + m[3]).trim() };
+  m = t.match(new RegExp('^(?:at|in)\\s+(.{1,40}?)\\s+(?:to\\s+)?(' + VERBS + ')\\b(.*)$', 'i'));
+  if (m) return { location: m[1].trim(), title: (m[2] + m[3]).trim() };
+  return { location: '', title: t.replace(/^(go to|going to|go|head to|drive to|at|in|on|to|visit)\s+/i, '') };
+}
+
+function cleanTitleEN(s) {
+  return s
+    .replace(/^(a|an|the|my|our)\s+/i, '')
+    .replace(/[\s,\-–—~:.]+$/i, '')
+    .trim();
+}
+
+function parseMultiText(text) {
+  const segments = text.split(/[。！？!?；;\n]+/)
+    .flatMap(s => s.split(/[，,、]/))
+    .map(s => s.trim()).filter(Boolean);
+  const events = [];
+  let cur = null;
+
+  const finalize = () => {
+    if (!cur) return;
+    if (!cur.hasTime && !cur.titleBits.length && cur.hasDate) { cur = null; return; }
+    const joined = cur.titleBits.join(cur.isEN ? ' ' : '，');
+    const loc = cur.isEN ? splitLocationEN(joined) : splitLocation(joined);
+    const title = (cur.isEN ? cleanTitleEN(loc.title) : cleanTitle(loc.title)) || '未命名日程';
+    (cur.dates || [null]).forEach(date => {
+      events.push({
+        title,
+        date: date || fmt(new Date()),
+        allDay: !cur.hasTime,
+        startTime: cur.hasTime ? pad(cur.start.h) + ':' + pad(cur.start.min) : '09:00',
+        endTime: cur.hasTime ? pad(cur.end.h) + ':' + pad(cur.end.min) : '10:00',
+        location: loc.location,
+        notes: '',
+        uid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+        now: nowStamp(),
+        needFix: cur.needFix,
+        selected: true,
+      });
+    });
+    cur = null;
+  };
+
+  for (const seg of segments) {
+    const isEN = /[A-Za-z]{2,}/.test(seg);
+    let rest = seg;
+    let dates = null, hasDate = false;
+
+    if (isEN) {
+      const range = parseRangeEN(rest);
+      if (range) { dates = range.days; hasDate = true; rest = rest.replace(range.matched, ''); }
+      else {
+        const d = extractDateEN(rest);
+        if (d) { dates = [d.date]; hasDate = true; rest = rest.replace(d.matched, ''); }
+      }
+    } else {
+      const range = parseRange(rest);
+      if (range) { dates = range.days; hasDate = true; rest = rest.replace(range.matched, ''); }
+      else {
+        const d = extractDate(rest);
+        if (d) { dates = [d.date]; hasDate = true; rest = rest.replace(d.matched, ''); }
+      }
+      rest = rest.replace(/每天|每日|全天|整天/g, '');
+    }
+
+    let hasTime = false, start = null, end = null;
+    if (isEN) {
+      const tr = extractTimeRangeEN(rest);
+      if (tr) { hasTime = true; start = tr.start; end = tr.end; rest = rest.replace(tr.matched, ''); }
+      else {
+        const t = extractTimeEN(rest);
+        if (t) {
+          hasTime = true;
+          start = t;
+          end = { h: (t.h + 1) % 24, min: t.min };
+          rest = rest.replace(t.matched, '');
+        }
+      }
+    } else {
+      const tr = extractTimeRange(rest);
+      if (tr) { hasTime = true; start = tr.start; end = tr.end; rest = rest.replace(tr.matched, ''); }
+      else {
+        const t = extractTime(rest);
+        if (t) {
+          hasTime = true;
+          start = t;
+          end = { h: (t.h + 1) % 24, min: t.min };
+          rest = rest.replace(t.matched, '');
+        }
+      }
+    }
+
+    const bit = (isEN ? preLocCleanEN(rest) : preLocClean(rest)).trim();
+
+    if (hasDate) {
+      if (cur) finalize();
+      cur = { dates, hasDate: true, hasTime, start, end, titleBits: bit ? [bit] : [], needFix: false, isEN };
+    } else if (hasTime) {
+      if (cur && cur.hasTime && (cur.titleBits.length || bit)) {
+        const inherit = cur.dates;
+        const langSame = cur.isEN === isEN;
+        finalize();
+        cur = {
+          dates: langSame ? inherit : null,
+          hasDate: false, hasTime, start, end,
+          titleBits: bit ? [bit] : [], needFix: !inherit, isEN,
+        };
+      } else if (cur) {
+        cur.hasTime = true;
+        cur.start = start;
+        cur.end = end;
+        if (bit) cur.titleBits.push(bit);
+      } else {
+        cur = { dates: null, hasDate: false, hasTime, start, end, titleBits: bit ? [bit] : [], needFix: true, isEN };
+      }
+    } else if (bit) {
+      if (cur) cur.titleBits.push(bit);
+      else cur = { dates: null, hasDate: false, hasTime: false, start: null, end: null, titleBits: [bit], needFix: true, isEN };
+    }
+  }
+  finalize();
+  return events;
+}
+
+let parsedEvents = [];
+
+function renderEventCards() {
+  const box = document.getElementById('eventCards');
+  box.innerHTML = '';
+  parsedEvents.forEach((ev, i) => {
+    const row = document.createElement('div');
+    row.className = 'evrow' + (ev.selected ? '' : ' off');
+
+    const selBox = document.createElement('input');
+    selBox.type = 'checkbox';
+    selBox.style.display = 'none';
+    selBox.checked = ev.selected;
+    selBox.dataset.idx = i;
+    selBox.dataset.field = 'selected';
+
+    const circle = document.createElement('div');
+    circle.className = 'circle' + (ev.selected ? ' on' : '');
+    circle.addEventListener('click', () => {
+      ev.selected = !ev.selected;
+      selBox.checked = ev.selected;
+      circle.classList.toggle('on', ev.selected);
+      row.classList.toggle('off', !ev.selected);
+      document.getElementById('selectAll').checked = parsedEvents.every(x => x.selected);
+    });
+
+    const body = document.createElement('div');
+    body.className = 'evbody';
+
+    const titleIn = document.createElement('input');
+    titleIn.type = 'text';
+    titleIn.value = ev.title;
+    titleIn.dataset.idx = i;
+    titleIn.dataset.field = 'title';
+
+    const meta = document.createElement('div');
+    meta.className = 'evmeta';
+    const dateIn = document.createElement('input');
+    dateIn.type = 'text';
+    dateIn.className = 'datefield';
+    dateIn.dataset.idx = i;
+    dateIn.dataset.field = 'date';
+    dateIn.dataset.iso = ev.date;
+    dateIn.value = fmtDateDisplay(ev.date);
+    dateIn.placeholder = t('datePh');
+    const startIn = document.createElement('input');
+    startIn.type = 'time';
+    startIn.value = ev.startTime;
+    startIn.dataset.idx = i;
+    startIn.dataset.field = 'startTime';
+    const sep = document.createElement('span');
+    sep.className = 'sep';
+    sep.textContent = '–';
+    const endIn = document.createElement('input');
+    endIn.type = 'time';
+    endIn.value = ev.endTime;
+    endIn.dataset.idx = i;
+    endIn.dataset.field = 'endTime';
+    const alLbl = document.createElement('label');
+    alLbl.className = 'allDayLbl';
+    const alCk = document.createElement('input');
+    alCk.type = 'checkbox';
+    alCk.checked = ev.allDay;
+    alCk.dataset.idx = i;
+    alCk.dataset.field = 'allDay';
+    const alSpan = document.createElement('span');
+    alSpan.textContent = t('allDay');
+    alLbl.appendChild(alCk);
+    alLbl.appendChild(alSpan);
+    alCk.addEventListener('change', () => {
+      startIn.disabled = alCk.checked;
+      endIn.disabled = alCk.checked;
+    });
+    startIn.disabled = ev.allDay;
+    endIn.disabled = ev.allDay;
+    meta.appendChild(dateIn);
+    if (ev.needFix) {
+      const flag = document.createElement('span');
+      flag.className = 'warnflag';
+      flag.textContent = t('missingDate');
+      meta.appendChild(flag);
+    }
+    meta.appendChild(startIn);
+    meta.appendChild(sep);
+    meta.appendChild(endIn);
+    meta.appendChild(alLbl);
+
+    const foot = document.createElement('div');
+    foot.className = 'evfoot';
+    const locIn = document.createElement('input');
+    locIn.type = 'text';
+    locIn.placeholder = t('locPh');
+    locIn.value = ev.location || '';
+    locIn.dataset.idx = i;
+    locIn.dataset.field = 'location';
+    const glink = document.createElement('a');
+    glink.className = 'glink';
+    glink.textContent = 'Google';
+    glink.href = makeGoogleURL(ev);
+    glink.target = '_blank';
+    glink.rel = 'noopener';
+    glink.dataset.idx = i;
+    foot.appendChild(locIn);
+    foot.appendChild(glink);
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'evdel';
+    del.textContent = '✕';
+    del.addEventListener('click', () => {
+      parsedEvents.splice(i, 1);
+      renderEventCards();
+    });
+
+    body.appendChild(titleIn);
+    body.appendChild(meta);
+    body.appendChild(foot);
+    row.appendChild(selBox);
+    row.appendChild(circle);
+    row.appendChild(body);
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+  document.getElementById('selectAll').checked = parsedEvents.every(x => x.selected);
+  document.getElementById('multiResult').style.display = parsedEvents.length ? 'block' : 'none';
+  document.getElementById('multiLinks').style.display = 'none';
+}
+
+function readCards() {
+  const inputs = document.querySelectorAll('#eventCards input[data-idx]');
+  inputs.forEach(inp => {
+    const i = parseInt(inp.dataset.idx, 10);
+    const field = inp.dataset.field;
+    if (field === 'allDay' || field === 'selected') parsedEvents[i][field] = inp.checked;
+    else if (field === 'date') parsedEvents[i].date = inp.dataset.iso || '';
+    else parsedEvents[i][field] = inp.value;
+  });
+  const links = document.querySelectorAll('#eventCards a.glink[data-idx]');
+  links.forEach(a => {
+    const i = parseInt(a.dataset.idx, 10);
+    a.href = makeGoogleURL(parsedEvents[i]);
+  });
+  return parsedEvents;
+}
+
+document.getElementById('selectAll').addEventListener('change', (e) => {
+  const on = e.target.checked;
+  parsedEvents.forEach(ev => { ev.selected = on; });
+  document.querySelectorAll('#eventCards .evrow').forEach((row, i) => {
+    row.classList.toggle('off', !on);
+    row.querySelector('.circle').classList.toggle('on', on);
+    row.querySelector('input[data-field="selected"]').checked = on;
+  });
+});
+
+document.getElementById('parseBtn').addEventListener('click', () => {
+  const text = document.getElementById('multiText').value.trim();
+  if (!text) { alert(t('alertPaste')); return; }
+  parsedEvents = parseMultiText(text);
+  if (!parsedEvents.length) { alert(t('alertNoParse')); return; }
+  renderEventCards();
+  document.getElementById('multiResult').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  document.getElementById('multiText').value = t('sampleText');
+});
+
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  const events = readCards().filter(ev => ev.selected);
+  if (!events.length) { alert(t('alertSelect')); return; }
+  let bad = false;
+  events.forEach(ev => {
+    if (!ev.date || !ev.title.trim()) bad = true;
+    if (!ev.allDay && ev.endTime <= ev.startTime) bad = true;
+  });
+  if (bad) { alert(t('alertIncomplete')); return; }
+  const ics = buildICS(events);
+  document.getElementById('multiAppleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  document.getElementById('multiDownloadBtn').dataset.ics = ics;
+  document.getElementById('multiLinks').style.display = 'block';
+  const items = getItems();
+  events.forEach(ev => items.unshift({ ...ev, title: ev.title.trim() }));
+  setItems(items);
+  renderList();
+  document.getElementById('multiLinks').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('tabSingle').addEventListener('click', () => switchTab('single'));
+document.getElementById('tabMulti').addEventListener('click', () => switchTab('multi'));
+
+function switchTab(which) {
+  const single = which === 'single';
+  document.getElementById('tabSingle').classList.toggle('active', single);
+  document.getElementById('tabMulti').classList.toggle('active', !single);
+  document.getElementById('singleSection').style.display = single ? 'block' : 'none';
+  document.getElementById('multiSection').style.display = single ? 'none' : 'block';
+}
+
+function fmtItemTime(data) {
+  if (data.allDay) return data.date + (lang === 'zh' ? ' 全天' : ' all day');
+  return data.date + ' ' + data.startTime + ' – ' + data.endTime;
+}
+
+function renderList() {
+  const items = getItems();
+  if (!items.length) {
+    listEl.innerHTML = '<div class="empty">' + t('savedEmpty') + '</div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  items.forEach((data, i) => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    const info = document.createElement('div');
+    info.className = 'info';
+    const tEl = document.createElement('div');
+    tEl.className = 'title';
+    tEl.textContent = data.title;
+    const tm = document.createElement('div');
+    tm.className = 'time';
+    tm.textContent = fmtItemTime(data);
+    info.appendChild(tEl);
+    info.appendChild(tm);
+    const addBtn = document.createElement('button');
+    addBtn.textContent = t('btnAdd');
+    addBtn.addEventListener('click', () => {
+      const ics = buildICS([data]);
+      document.getElementById('appleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+      document.getElementById('googleLink').href = makeGoogleURL(data);
+      document.getElementById('downloadBtn').dataset.ics = ics;
+      switchTab('single');
+      document.getElementById('links').style.display = 'block';
+      document.getElementById('links').scrollIntoView({ behavior: 'smooth' });
+    });
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del';
+    delBtn.textContent = t('btnDel');
+    delBtn.addEventListener('click', () => {
+      const items = getItems();
+      items.splice(i, 1);
+      setItems(items);
+      renderList();
+    });
+    div.appendChild(info);
+    div.appendChild(addBtn);
+    div.appendChild(delBtn);
+    listEl.appendChild(div);
+  });
+}
+
+document.getElementById('date').dataset.iso = fmt(new Date());
+document.getElementById('date').value = fmtDateDisplay(document.getElementById('date').dataset.iso);
+
+function fmtDateDisplay(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return lang === 'zh'
+    ? d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日'
+    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const calOverlay = document.getElementById('calOverlay');
+let calTarget = null;
+let calView = new Date();
+
+function calLabels() {
+  document.getElementById('calToday').textContent = lang === 'zh' ? '今天' : 'Today';
+  document.getElementById('calClear').textContent = lang === 'zh' ? '清除' : 'Clear';
+  document.getElementById('calDone').textContent = lang === 'zh' ? '完成' : 'Done';
+  const weekBox = document.getElementById('calWeek');
+  weekBox.innerHTML = '';
+  const week = lang === 'zh' ? '日一二三四五六'.split('') : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  week.forEach(w => {
+    const s = document.createElement('span');
+    s.textContent = w;
+    weekBox.appendChild(s);
+  });
+}
+
+function renderCal() {
+  const y = calView.getFullYear(), m = calView.getMonth();
+  document.getElementById('calMonth').textContent =
+    lang === 'zh' ? y + '年' + (m + 1) + '月'
+    : calView.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const startOffset = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  const todayStr = fmt(new Date());
+  const selStr = calTarget ? calTarget.dataset.iso : '';
+  for (let i = 0; i < startOffset; i++) {
+    const d = prevDays - startOffset + 1 + i;
+    const cell = document.createElement('div');
+    cell.className = 'cal-day other';
+    cell.textContent = d;
+    cell.addEventListener('click', () => {
+      calView = new Date(y, m - 1, d);
+      renderCal();
+    });
+    grid.appendChild(cell);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    const val = y + '-' + pad(m + 1) + '-' + pad(d);
+    if (val === todayStr) cell.classList.add('today');
+    if (val === selStr) cell.classList.add('selected');
+    cell.textContent = d;
+    cell.addEventListener('click', () => selectCalDate(val));
+    grid.appendChild(cell);
+  }
+  const total = startOffset + daysInMonth + (7 - ((startOffset + daysInMonth) % 7 || 7));
+  let nextDay = 1;
+  while (startOffset + daysInMonth + nextDay - 1 < total) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-day other';
+    cell.textContent = nextDay;
+    cell.addEventListener('click', () => {
+      calView = new Date(y, m + 1, nextDay);
+      renderCal();
+    });
+    grid.appendChild(cell);
+    nextDay++;
+  }
+}
+
+function selectCalDate(val) {
+  if (calTarget) {
+    calTarget.dataset.iso = val;
+    calTarget.value = fmtDateDisplay(val);
+  }
+  closeCal();
+}
+
+function openCalendar(input) {
+  calTarget = input;
+  calView = input.dataset.iso ? new Date(input.dataset.iso + 'T00:00:00') : new Date();
+  calLabels();
+  renderCal();
+  calOverlay.style.display = 'flex';
+}
+
+function closeCal() {
+  calOverlay.style.display = 'none';
+  calTarget = null;
+}
+
+document.addEventListener('click', (e) => {
+  const inp = e.target.closest ? e.target.closest('input.datefield') : null;
+  if (inp) openCalendar(inp);
+});
+
+calOverlay.addEventListener('mousedown', (e) => {
+  if (e.target === calOverlay) closeCal();
+});
+
+document.getElementById('calPrev').addEventListener('click', () => {
+  calView.setMonth(calView.getMonth() - 1);
+  renderCal();
+});
+
+document.getElementById('calNext').addEventListener('click', () => {
+  calView.setMonth(calView.getMonth() + 1);
+  renderCal();
+});
+
+document.getElementById('calToday').addEventListener('click', () => selectCalDate(fmt(new Date())));
+document.getElementById('calClear').addEventListener('click', () => {
+  if (calTarget) {
+    calTarget.dataset.iso = '';
+    calTarget.value = '';
+  }
+  closeCal();
+});
+document.getElementById('calDone').addEventListener('click', closeCal);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && calOverlay.style.display === 'flex') closeCal();
+});
+
+applyLang();
+</script>
+</body>
+</html>
