@@ -1106,11 +1106,8 @@ function parseRangeEN(s) {
     const mo1 = MONTHS[m[1].slice(0, 3).toLowerCase()];
     const d1 = parseInt(m[2], 10);
     let mo2 = mo1;
-    let d2 = parseInt(m[3], 10);
-    if (m.length > 4 && m[3] !== undefined && m[4] !== undefined) {
-      mo2 = MONTHS[m[3].slice(0, 3).toLowerCase()];
-      d2 = parseInt(m[4], 10);
-    }
+    if (m[3]) mo2 = MONTHS[m[3].slice(0, 3).toLowerCase()];
+    const d2 = parseInt(m[4], 10);
     if (isNaN(d1) || isNaN(d2)) return null;
     const y = new Date().getFullYear();
     const start = new Date(y, mo1, d1);
@@ -1130,9 +1127,10 @@ function parseRangeEN(s) {
 
 function preLocCleanEN(s) {
   return s
+    .replace(/^[\s,\-–—~:.]*/, '')
+    .replace(/^(on|at|in|to|by)\s+/i, '')
     .replace(/^(i|we)\s+(will|would|am|have|need|want|must|got to|have to)?\s*/i, '')
     .replace(/^(have|has|got|need|want|will|must|gotta|gonna|going to|am going to|am|prepare|plan to)\s+(to\s+|a\s+|an\s+|the\s+)?/i, '')
-    .replace(/^(on|at|in|to|by)\s+/i, '')
     .replace(/^(a|an|the|my|our)\s+/i, '')
     .replace(/^[\s,\-–—~:.]*/, '')
     .trim();
@@ -1186,7 +1184,7 @@ function parseMultiText(text) {
   };
 
   for (const seg of segments) {
-    const isEN = /[A-Za-z]{2,}/.test(seg);
+    const isEN = !/[\u4e00-\u9fff]/.test(seg);
     let rest = seg;
     let dates = null, hasDate = false;
 
