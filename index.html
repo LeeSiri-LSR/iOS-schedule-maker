@@ -720,7 +720,7 @@ function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent); }
 
 function escapeToSafari(ics, mode) {
   if (!confirm(t('goSafariConfirm'))) return;
-  const target = 'https://cdn.jsdelivr.net/gh/LeeSiri-LSR/iOS-schedule-maker@main/redirect.html' +
+  const target = 'https://raw.githack.com/LeeSiri-LSR/iOS-schedule-maker/main/redirect.html' +
     (mode === 'dl' ? '#p2=' : '#p1=') + encodeURIComponent(ics);
   window.location.href = target;
 }
