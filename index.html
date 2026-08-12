@@ -238,6 +238,22 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
 .item button.del { color: #EF4444; border-color: #FECACA; }
 .item button.del:hover { background: #FEF2F2; color: #EF4444; }
 .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 16px 0; }
+.saved-head { display: flex; align-items: center; gap: 10px; }
+.saved-head h2 { margin: 0; }
+.clearall {
+  border: 1px solid #FECACA;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #EF4444;
+  padding: 5px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s ease;
+}
+.clearall:hover { background: #FEF2F2; }
+.clearall:active { transform: scale(.97); }
 .cal-overlay {
   position: fixed;
   inset: 0;
@@ -395,7 +411,10 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
   </div>
 
   <div class="saved card">
-    <h2 data-i18n="savedTitle">已保存的日程</h2>
+    <div class="saved-head">
+      <button type="button" id="clearAllBtn" class="clearall" data-i18n="clearAll">清除全部</button>
+      <h2 data-i18n="savedTitle">已保存的日程</h2>
+    </div>
     <div id="list"></div>
   </div>
 </main>
@@ -455,6 +474,8 @@ const I18N = {
     btnAppleMulti: '📲 勾选的日程全部添加到 Apple 日历',
     hintMultiLinks: '点上面的按钮会一次弹出所有勾选的日程。每行右下角的 Google 链接可以单独添加那一条到 Google 日历。',
     savedTitle: '已保存的日程',
+    clearAll: '清除全部',
+    confirmClear: '确定清除全部历史记录吗？此操作不可撤销。',
     savedEmpty: '还没有保存的日程',
     btnAdd: '加日历',
     btnDel: '删除',
@@ -500,6 +521,8 @@ const I18N = {
     btnAppleMulti: '📲 Add all selected to Apple Calendar',
     hintMultiLinks: 'The button above adds every selected schedule at once. The Google link on each row adds just that one to Google Calendar.',
     savedTitle: 'Saved schedules',
+    clearAll: 'Clear all',
+    confirmClear: 'Clear all saved schedules? This cannot be undone.',
     savedEmpty: 'No saved schedules yet',
     btnAdd: 'Add',
     btnDel: 'Delete',
@@ -1357,6 +1380,14 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
   setItems(items);
   renderList();
   document.getElementById('multiLinks').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!getItems().length) return;
+  if (confirm(t('confirmClear'))) {
+    setItems([]);
+    renderList();
+  }
 });
 
 document.getElementById('tabSingle').addEventListener('click', () => switchTab('single'));
