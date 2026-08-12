@@ -256,23 +256,6 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
 }
 .clearall:hover { background: #FEF2F2; }
 .clearall:active { transform: scale(.97); }
-.banner-text { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.banner .primary { margin-top: 10px; }
-.banner-mini {
-  width: 100%;
-  margin-top: 8px;
-  padding: 11px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
-  background: #fff;
-  color: #475569;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all .15s ease;
-}
-.banner-mini:hover { border-color: #A5B4FC; color: #4F46E5; }
 .cal-overlay {
   position: fixed;
   inset: 0;
@@ -355,11 +338,7 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
   <p data-i18n="appSub">填好日程，一键添加进 Apple 日历</p>
 </header>
 <main>
-  <div id="hashBanner" class="card banner" style="display:none">
-    <div class="banner-text" data-i18n="bannerText">已从主屏幕跳转，点下面按钮完成添加：</div>
-    <button type="button" id="bannerIcs" class="primary" data-i18n="btnAppleMini">📲 添加到 Apple 日历</button>
-    <button type="button" id="bannerDl" class="banner-mini" data-i18n="btnDownloadMini">⬇️ 下载 .ics 文件</button>
-  </div>  <div class="card tabs">
+  <div class="card tabs">
     <button type="button" id="tabSingle" class="tab active" data-i18n="tabSingle">单日程</button>
     <button type="button" id="tabMulti" class="tab" data-i18n="tabMulti">多日程</button>
   </div>
@@ -485,7 +464,7 @@ const I18N = {
     btnApple: '📲 添加到 Apple 日历',
     btnGoogle: '➕ 添加到 Google 日历',
     btnDownload: '⬇️ 下载 .ics 文件（手动导入）',
-    hintSingle: '提示：iPhone 上点第一个按钮会直接跳到「日历」App 并弹出添加界面。Mac 上用 Safari 点也一样；如果用 Chrome，请改用「下载 .ics」，双击文件即可添加。',
+    hintSingle: '提示：从 iPhone 主屏幕打开时，按钮会调出系统分享菜单，可存储 .ics 文件后导入日历；在 Safari 中会直接打开日历文件。',
     mLabel: '把未来的安排一次性粘贴进来（每行或每句一个日程，支持逗号分隔）',
     phMulti: '例如：我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
     btnSample: '填入示例',
@@ -510,11 +489,7 @@ const I18N = {
     alertNoParse: '没识别出日程，请检查日期写法',
     alertSelect: '请至少勾选一个日程',
     alertIncomplete: '有日程日期/时间不完整，请检查后重试',
-    alertStandalone: '主屏幕模式下无法打开日历，请用 Safari 浏览器打开网页后再操作。',
-    bannerText: '已从主屏幕跳转，点下面按钮完成添加：',
-    goSafariConfirm: '此操作需要前往 Safari 完成，是否前往？',
-    btnAppleMini: '📲 添加到 Apple 日历',
-    btnDownloadMini: '⬇️ 下载 .ics 文件',
+    alertShareFailed: '无法打开系统分享菜单，请在 Safari 中打开网页后重试。',
     sampleText: '我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
   },
   en: {
@@ -537,7 +512,7 @@ const I18N = {
     btnApple: '📲 Add to Apple Calendar',
     btnGoogle: '➕ Add to Google Calendar',
     btnDownload: '⬇️ Download .ics (manual import)',
-    hintSingle: 'Tip: on iPhone, the first button jumps straight to the Calendar app with the event ready to save. Same on Mac with Safari. In Chrome, use "Download .ics" and double-click the file instead.',
+    hintSingle: 'Tip: from the iPhone home screen, these buttons open the system share sheet so you can save the .ics file and import it into Calendar. In Safari, the calendar file opens directly.',
     mLabel: 'Paste your future plans in one go (one line or sentence per schedule, commas supported)',
     phMulti: 'e.g. On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
     btnSample: 'Fill example',
@@ -562,11 +537,7 @@ const I18N = {
     alertNoParse: 'No schedules recognized, check the date format',
     alertSelect: 'Select at least one schedule',
     alertIncomplete: 'Some schedules have incomplete date/time',
-    alertStandalone: "Can't open Calendar in home-screen mode. Please open the page in Safari and try again.",
-    bannerText: 'You came from the home screen. Tap a button below to finish:',
-    goSafariConfirm: 'This needs Safari to finish. Open Safari now?',
-    btnAppleMini: '📲 Add to Apple Calendar',
-    btnDownloadMini: '⬇️ Download .ics',
+    alertShareFailed: 'Could not open the system share sheet. Please open this page in Safari and try again.',
     sampleText: 'On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
   },
 };
@@ -683,11 +654,33 @@ function getFormData() {
   };
 }
 
-function downloadICS(ics) {
-  if (isIOS() && window.navigator.standalone === true) {
-    escapeToSafari(ics, 'dl');
-    return;
+function isStandalone() {
+  return window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+}
+
+async function shareICS(ics) {
+  if (typeof navigator.share !== 'function') return false;
+  const file = new File([ics], 'schedule.ics', { type: 'text/calendar' });
+  if (typeof navigator.canShare === 'function' && !navigator.canShare({ files: [file] })) {
+    return false;
   }
+  try {
+    await navigator.share({
+      files: [file],
+      title: 'schedule.ics',
+    });
+    return true;
+  } catch (error) {
+    if (error && error.name === 'AbortError') return true;
+    console.error('Unable to share calendar file:', error);
+    alert(t('alertShareFailed'));
+    return true;
+  }
+}
+
+async function downloadICS(ics) {
+  if (isIOS() && isStandalone() && await shareICS(ics)) return;
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -718,21 +711,11 @@ function showSingleLinks(data) {
 
 function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent); }
 
-function escapeToSafari(ics, mode) {
-  if (!confirm(t('goSafariConfirm'))) return;
-  const target = 'https://raw.githack.com/LeeSiri-LSR/iOS-schedule-maker/main/index.html' +
-    (mode === 'dl' ? '#p2=' : '#p1=') + encodeURIComponent(ics);
-  window.location.href = target;
-}
-
-function openCalendarICS(ics) {
+async function openCalendarICS(ics) {
+  if (isIOS() && isStandalone() && await shareICS(ics)) return;
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   if (isIOS()) {
-    if (window.navigator.standalone === true) {
-      escapeToSafari(ics, 'add');
-      return;
-    }
     window.location.href = url;
   } else {
     downloadICS(ics);
@@ -1655,25 +1638,6 @@ document.getElementById('calDone').addEventListener('click', closeCal);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && calOverlay.style.display === 'flex') closeCal();
 });
-
-(function () {
-  let m = location.hash.match(/^#p1=(.*)$/);
-  let mode = 'add';
-  if (!m) { m = location.hash.match(/^#p2=(.*)$/); mode = 'dl'; }
-  if (!m) return;
-  let ics = '';
-  try { ics = decodeURIComponent(m[1]); } catch (e) { return; }
-  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-  const banner = document.getElementById('hashBanner');
-  banner.style.display = 'block';
-  document.getElementById('bannerIcs').onclick = () => { openCalendarICS(ics); banner.style.display = 'none'; };
-  document.getElementById('bannerDl').onclick = () => { downloadICS(ics); banner.style.display = 'none'; };
-  setTimeout(() => {
-    if (window.navigator.standalone === true) return;
-    if (mode === 'dl') downloadICS(ics);
-    else openCalendarICS(ics);
-  }, 500);
-})();
 
 applyLang();
 </script>
