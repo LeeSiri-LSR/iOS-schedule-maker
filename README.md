@@ -29,3 +29,7 @@ English:
 - On Saturday from 5 to 7 pm I have a presentation
 - Sunday at 3 pm go to Chadstone to watch Spider-Man
 - Sep 1st to 3rd at 9:30 am lecture
+
+## 许可证
+
+免费使用，禁止商用。采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)（署名-非商业性使用）授权，详见 [LICENSE.md](LICENSE.md)。

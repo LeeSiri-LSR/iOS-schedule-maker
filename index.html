@@ -240,6 +240,13 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
 .item button.del { color: #EF4444; border-color: #FECACA; }
 .item button.del:hover { background: #FEF2F2; color: #EF4444; }
 .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 16px 0; }
+.site-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #94A3B8;
+  margin-top: 20px;
+  padding: 0 16px 8px;
+}
 .saved-head { display: flex; align-items: center; gap: 10px; }
 .saved-head h2 { margin: 0; }
 .clearall {
@@ -419,6 +426,8 @@ button.primary:active { transform: translateY(0) scale(.99); filter: brightness(
     </div>
     <div id="list"></div>
   </div>
+
+  <div class="site-footer" data-i18n="footer">© 2026 LeeSiri-LSR · 免费使用，禁止商用</div>
 </main>
 
 <div id="calOverlay" class="cal-overlay" style="display:none">
@@ -491,6 +500,7 @@ const I18N = {
     alertIncomplete: '有日程日期/时间不完整，请检查后重试',
     alertShareFailed: '无法打开系统分享菜单，请在 Safari 中打开网页后重试。',
     sampleText: '我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
+    footer: '© 2026 LeeSiri-LSR · 免费使用，禁止商用 · CC BY-NC 4.0',
   },
   en: {
     appTitle: '📅 Schedule Maker',
@@ -539,6 +549,7 @@ const I18N = {
     alertIncomplete: 'Some schedules have incomplete date/time',
     alertShareFailed: 'Could not open the system share sheet. Please open this page in Safari and try again.',
     sampleText: 'On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
+    footer: '© 2026 LeeSiri-LSR · Free for non-commercial use · CC BY-NC 4.0',
   },
 };
 
