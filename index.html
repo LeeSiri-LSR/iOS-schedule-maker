@@ -489,6 +489,7 @@ const I18N = {
     alertNoParse: '没识别出日程，请检查日期写法',
     alertSelect: '请至少勾选一个日程',
     alertIncomplete: '有日程日期/时间不完整，请检查后重试',
+    alertStandalone: '主屏幕模式下无法打开日历，请用 Safari 浏览器打开网页后再操作。',
     sampleText: '我在周六下午5点到7点有个presentation，周天下午3点钟要去chadstone看蜘蛛侠',
   },
   en: {
@@ -536,6 +537,7 @@ const I18N = {
     alertNoParse: 'No schedules recognized, check the date format',
     alertSelect: 'Select at least one schedule',
     alertIncomplete: 'Some schedules have incomplete date/time',
+    alertStandalone: "Can't open Calendar in home-screen mode. Please open the page in Safari and try again.",
     sampleText: 'On Saturday from 5 to 7 pm I have a presentation, Sunday at 3 pm go to Chadstone to watch Spider-Man',
   },
 };
@@ -653,6 +655,10 @@ function getFormData() {
 }
 
 function downloadICS(ics) {
+  if (isIOS() && window.navigator.standalone === true) {
+    alert(t('alertStandalone'));
+    return;
+  }
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -661,7 +667,7 @@ function downloadICS(ics) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 function getItems() {
@@ -673,12 +679,41 @@ function setItems(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)
 
 function showSingleLinks(data) {
   const ics = buildICS([data]);
-  document.getElementById('appleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  document.getElementById('appleLink').href = 'data:text/calendar;charset=utf8,' + encodeURIComponent(ics);
+  document.getElementById('appleLink').dataset.ics = ics;
   document.getElementById('googleLink').href = makeGoogleURL(data);
   document.getElementById('downloadBtn').dataset.ics = ics;
   document.getElementById('links').style.display = 'block';
   document.getElementById('links').scrollIntoView({ behavior: 'smooth' });
 }
+
+function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent); }
+
+function openCalendarICS(ics) {
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  if (isIOS()) {
+    if (window.navigator.standalone === true) {
+      const w = window.open(url, '_blank');
+      if (!w) alert(t('alertStandalone'));
+    } else {
+      window.location.href = url;
+    }
+  } else {
+    downloadICS(ics);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+function appleOpen(e) {
+  const ics = e.currentTarget.dataset.ics;
+  if (!ics) return;
+  e.preventDefault();
+  openCalendarICS(ics);
+}
+
+document.getElementById('appleLink').addEventListener('click', appleOpen);
+document.getElementById('multiAppleLink').addEventListener('click', appleOpen);
 
 document.getElementById('downloadBtn').addEventListener('click', (e) => {
   const ics = e.currentTarget.dataset.ics;
@@ -1374,7 +1409,8 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
   });
   if (bad) { alert(t('alertIncomplete')); return; }
   const ics = buildICS(events);
-  document.getElementById('multiAppleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  document.getElementById('multiAppleLink').href = 'data:text/calendar;charset=utf8,' + encodeURIComponent(ics);
+  document.getElementById('multiAppleLink').dataset.ics = ics;
   document.getElementById('multiDownloadBtn').dataset.ics = ics;
   document.getElementById('multiLinks').style.display = 'block';
   const items = getItems();
@@ -1432,7 +1468,8 @@ function renderList() {
     addBtn.textContent = t('btnAdd');
     addBtn.addEventListener('click', () => {
       const ics = buildICS([data]);
-      document.getElementById('appleLink').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+      document.getElementById('appleLink').href = 'data:text/calendar;charset=utf8,' + encodeURIComponent(ics);
+      document.getElementById('appleLink').dataset.ics = ics;
       document.getElementById('googleLink').href = makeGoogleURL(data);
       document.getElementById('downloadBtn').dataset.ics = ics;
       switchTab('single');
