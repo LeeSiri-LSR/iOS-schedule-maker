@@ -656,7 +656,7 @@ function getFormData() {
 
 function downloadICS(ics) {
   if (isIOS() && window.navigator.standalone === true) {
-    alert(t('alertStandalone'));
+    window.open(window.location.href, '_blank');
     return;
   }
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
@@ -694,11 +694,10 @@ function openCalendarICS(ics) {
   const url = URL.createObjectURL(blob);
   if (isIOS()) {
     if (window.navigator.standalone === true) {
-      const w = window.open(url, '_blank');
-      if (!w) alert(t('alertStandalone'));
-    } else {
-      window.location.href = url;
+      window.open(window.location.href, '_blank');
+      return;
     }
+    window.location.href = url;
   } else {
     downloadICS(ics);
   }
