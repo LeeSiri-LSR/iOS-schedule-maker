@@ -720,8 +720,9 @@ function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent); }
 
 function escapeToSafari(ics, mode) {
   if (!confirm(t('goSafariConfirm'))) return;
-  const base = window.location.href.split('#')[0];
-  window.open(base + (mode === 'dl' ? '#p2=' : '#p1=') + encodeURIComponent(ics), '_blank');
+  const target = 'https://cdn.jsdelivr.net/gh/LeeSiri-LSR/iOS-schedule-maker@main/redirect.html' +
+    (mode === 'dl' ? '#p2=' : '#p1=') + encodeURIComponent(ics);
+  window.location.href = target;
 }
 
 function openCalendarICS(ics) {
@@ -1670,6 +1671,7 @@ document.addEventListener('keydown', (e) => {
   document.getElementById('bannerIcs').onclick = () => { openCalendarICS(ics); banner.style.display = 'none'; };
   document.getElementById('bannerDl').onclick = () => { downloadICS(ics); banner.style.display = 'none'; };
   setTimeout(() => {
+    if (window.navigator.standalone === true) return;
     if (mode === 'dl') downloadICS(ics);
     else openCalendarICS(ics);
   }, 500);
